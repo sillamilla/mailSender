@@ -22,7 +22,7 @@ func ReadForm(r *http.Request, data *models.Message) error {
 
 	data.FromAddress = r.FormValue("FromAddress")
 	data.FromName = r.FormValue("FromName")
-	data.To = r.FormValue("To")
+	data.To = strings.Split(r.FormValue("To"), ",")
 	data.Subject = r.FormValue("Subject")
 	data.Text = r.FormValue("Text")
 
@@ -99,16 +99,22 @@ func (e customErr) Error() string {
 func Validate(data *models.Message) error {
 	var errs customErr
 
-	if len(data.FromAddress) > 320 || len(data.FromAddress) < 3 {
+	address := fmt.Sprintf("%s <%s>", data.FromName, data.FromAddress)
+
+	if len(address) > 320 || len(address) < 3 {
 		errs = append(errs, errors.New("FROM: quantity of characters"))
-	} else if _, err := mail.ParseAddress(data.FromAddress); err != nil { //todo replace with another validation
+
+	} else if _, err := mail.ParseAddress(address); err != nil { //todo replace with another validation
 		errs = append(errs, errors.New("FROM: invalid email format"))
 	}
 
-	if len(data.To) > 320 || len(data.To) < 3 {
-		errs = append(errs, errors.New("TO: quantity of characters"))
-	} else if _, err := mail.ParseAddress(data.To); err != nil {
-		errs = append(errs, errors.New("TO: invalid email format"))
+	for _, reciver := range data.To {
+		address = fmt.Sprintf(" <%s>", reciver)
+		if len(address) > 320 || len(address) < 3 {
+			errs = append(errs, errors.New("TO: quantity of characters"))
+		} else if _, err := mail.ParseAddress(address); err != nil {
+			errs = append(errs, errors.New("TO: invalid email format"))
+		}
 	}
 
 	if len(data.Subject) > 78 {
@@ -125,5 +131,9 @@ func Validate(data *models.Message) error {
 		}
 	}
 
-	return errs
+	if errs != nil {
+		return errs
+	}
+
+	return nil
 }

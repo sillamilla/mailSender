@@ -43,7 +43,7 @@ func main() {
 	}
 
 	msg, err := builder.
-		FromAddress("test@gmail.com").
+		FromAddress(sender.Username).
 		FromName("Ilia").
 		To("test1@gmail.com", "test2@gmail.com").
 		AddSubject("Test").

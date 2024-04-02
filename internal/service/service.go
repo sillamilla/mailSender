@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"net/smtp"
 	"net/textproto"
+	"strings"
 )
 
 func (s *Service) SendSMTPMessage(msg *models.Message) error {
@@ -47,7 +48,7 @@ func (s *Service) SendSMTPMessage(msg *models.Message) error {
 
 	header := make(map[string]string)
 	header["FromAddress"] = msg.FromName + " <" + msg.FromAddress + ">"
-	header["To"] = msg.To
+	header["To"] = strings.Join(msg.To, ",")
 	header["Subject"] = msg.Subject
 	header["MIME-Version"] = "1.0"
 	header["Content-Type"] = "multipart/mixed; boundary=" + writer.Boundary()
@@ -68,6 +69,6 @@ func (s *Service) SendSMTPMessage(msg *models.Message) error {
 }
 
 func (s *Service) sendMessage(message string) error {
-	err := smtp.SendMail(s.sender.Host+":"+s.sender.Port, s.auth, s.msg.FromAddress, []string{s.msg.To}, []byte(message))
+	err := smtp.SendMail(s.sender.Host+":"+s.sender.Port, s.auth, s.msg.FromAddress, s.msg.To, []byte(message))
 	return err
 }

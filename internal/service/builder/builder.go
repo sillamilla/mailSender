@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"mail_microservice/internal/helper"
 	"mail_microservice/internal/models"
-	"strings"
 )
 
 type MessageBuilder struct {
@@ -29,7 +28,7 @@ func (b *MessageBuilder) FromName(name string) *MessageBuilder {
 }
 
 func (b *MessageBuilder) To(emails ...string) *MessageBuilder {
-	b.msg.To = strings.Join(emails, ", ") //todo coma check at the end
+	b.msg.To = emails
 	return b
 }
 

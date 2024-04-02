@@ -16,12 +16,12 @@ type SenderCredentials struct {
 }
 
 type Message struct {
-	FromAddress string `json:"from_address"`
-	FromName    string `json:"from_name"`
-	To          string `json:"to"`
-	Subject     string `json:"subject"`
-	Text        string `json:"text"`
-	Files       []File `json:"files"`
+	FromAddress string   `json:"from_address"`
+	FromName    string   `json:"from_name"`
+	To          []string `json:"to"`
+	Subject     string   `json:"subject"`
+	Text        string   `json:"text"`
+	Files       []File   `json:"files"`
 }
 
 type File struct {

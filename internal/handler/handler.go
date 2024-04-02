@@ -33,11 +33,11 @@ func (h *Handler) SendMail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	builder := builder.MessageBuilder{}
-	msg, err := builder.BuildMessage().
+	b := builder.New()
+	msg, err := b.
 		FromAddress(requestPayload.FromAddress).
 		FromName(requestPayload.FromName).
-		To(requestPayload.To).
+		To(requestPayload.To...).
 		AddSubject(requestPayload.Subject).
 		AddText(requestPayload.Text).
 		AddFiles(requestPayload.Files).
