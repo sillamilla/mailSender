@@ -26,5 +26,5 @@ type Message struct {
 
 type File struct {
 	Name string `json:"name"`
-	Body string `json:"body"`
+	Body []byte `json:"body"`
 }

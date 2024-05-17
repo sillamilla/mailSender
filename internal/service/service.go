@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"mail_microservice/internal/models"
 	"mime/multipart"
+	"net/http"
 	"net/smtp"
 	"net/textproto"
 	"strings"
@@ -29,12 +30,19 @@ func (s *Service) SendSMTPMessage(msg *models.Message) error {
 
 	if msg.Files != nil {
 		for _, fileData := range msg.Files {
-			part, err = writer.CreateFormFile("file", fileData.Name)
+			h = make(textproto.MIMEHeader)
+			//h.Set("Content-Disposition", `form-data; name="file"; filename="`+fileData.Name+`"`)
+			h.Set("Content-Disposition", `attachment;filename="`+fileData.Name+`"`)
+			contentType := http.DetectContentType(fileData.Body)
+			h.Set("Content-Type", contentType)
+			h.Set("Content-Transfer-Encoding", "base64")
+
+			part, err = writer.CreatePart(h)
 			if err != nil {
 				return err
 			}
 
-			_, err = part.Write([]byte(fileData.Body))
+			_, err = part.Write(fileData.Body)
 			if err != nil {
 				return err
 			}
@@ -69,6 +77,8 @@ func (s *Service) SendSMTPMessage(msg *models.Message) error {
 }
 
 func (s *Service) sendMessage(message string) error {
+	//TCPconn, err := net.DialTCP("TCP")
+	//smtp.NewClient()
 	err := smtp.SendMail(s.sender.Host+":"+s.sender.Port, s.auth, s.msg.FromAddress, s.msg.To, []byte(message))
 	return err
 }

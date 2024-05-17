@@ -5,15 +5,41 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mail_microservice/internal/models"
 	"net/http"
 	"net/mail"
+	"path/filepath"
 	"strings"
 )
 
 const maxBytes = int64(1048576) // 1GB
 const maxFileSize = 26214400    // 25MB
+
+func GetFilesFromDirectory(dirPath string) []models.File {
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		log.Fatalf("Failed to read directory: %v", err)
+	}
+
+	var fileList []models.File
+	for _, file := range files {
+		if !file.IsDir() {
+			content, err := ioutil.ReadFile(filepath.Join(dirPath, file.Name()))
+			if err != nil {
+				log.Fatalf("Failed to read file: %v", err)
+			}
+
+			fileList = append(fileList, models.File{
+				Name: file.Name(),
+				Body: content,
+			})
+		}
+	}
+
+	return fileList
+}
 
 func ReadForm(r *http.Request, data *models.Message) error {
 	if err := r.ParseMultipartForm(maxBytes); err != nil {
@@ -38,10 +64,10 @@ func ReadForm(r *http.Request, data *models.Message) error {
 		if err != nil {
 			return err
 		}
-
+		//todo probably wrong
 		newFile := models.File{
 			Name: header.Filename,
-			Body: string(content),
+			Body: content,
 		}
 
 		data.Files = append(data.Files, newFile)

@@ -5,12 +5,12 @@ import (
 	"log"
 	"mail_microservice/internal/config"
 	"mail_microservice/internal/handler"
+	"mail_microservice/internal/helper"
 	"mail_microservice/internal/models"
 	"mail_microservice/internal/service"
 	"mail_microservice/internal/service/builder"
 	"net/http"
 	"net/smtp"
-	"os"
 )
 
 func main() {
@@ -29,24 +29,13 @@ func main() {
 	handler := handler.New(service)
 	builder := builder.New()
 
-	videoData, err := os.ReadFile("files/video.mp4")
-	if err != nil {
-		log.Fatal(err)
-	}
-	txtData, err := os.ReadFile("files/file.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	files := []models.File{
-		{Name: "video.mp4", Body: string(videoData)},
-		{Name: "file.txt", Body: string(txtData)},
-	}
+	files := helper.GetFilesFromDirectory("./files")
 
 	msg, err := builder.
-		FromAddress(sender.Username).
-		FromName("Ilia").
-		To("test1@gmail.com", "test2@gmail.com").
-		AddSubject("Test").
+		FromAddress("test@cock.li").
+		FromName("test").
+		To("test@cock.li").
+		AddSubject("TEST").
 		AddText("TEST MESSAGE!").
 		AddFiles(files).
 		Build()
@@ -59,6 +48,10 @@ func main() {
 		log.Printf("Error sending SMTP message: %v", err)
 		return
 	}
+
+	//todo sending
+
+	fmt.Println("message sent")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.WebPort.Port),

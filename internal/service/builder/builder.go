@@ -23,7 +23,7 @@ func (b *MessageBuilder) FromAddress(email string) *MessageBuilder {
 }
 
 func (b *MessageBuilder) FromName(name string) *MessageBuilder {
-	b.msg.FromName = name
+	b.msg.FromName = base64.StdEncoding.EncodeToString([]byte(name))
 	return b
 }
 
@@ -44,12 +44,12 @@ func (b *MessageBuilder) AddText(text string) *MessageBuilder {
 
 func (b *MessageBuilder) AddFiles(files []models.File) *MessageBuilder {
 	for _, file := range files {
-		encodedFile := models.File{
+		fileData := models.File{
 			Name: file.Name,
-			Body: base64.StdEncoding.EncodeToString([]byte(file.Body)),
+			Body: file.Body,
 		}
 
-		b.msg.Files = append(b.msg.Files, encodedFile)
+		b.msg.Files = append(b.msg.Files, fileData)
 	}
 
 	return b
