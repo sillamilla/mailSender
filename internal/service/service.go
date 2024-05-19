@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"encoding/base64"
 	"mail_microservice/internal/models"
 	"mime/multipart"
 	"net/http"
@@ -42,7 +43,8 @@ func (s *Service) SendSMTPMessage(msg *models.Message) error {
 				return err
 			}
 
-			_, err = part.Write(fileData.Body)
+			encoded := base64.StdEncoding.EncodeToString(fileData.Body)
+			_, err = part.Write([]byte(encoded))
 			if err != nil {
 				return err
 			}

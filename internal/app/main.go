@@ -11,6 +11,7 @@ import (
 	"mail_microservice/internal/service/builder"
 	"net/http"
 	"net/smtp"
+	"time"
 )
 
 func main() {
@@ -43,15 +44,25 @@ func main() {
 		log.Printf("Error building message: %v", err)
 		return
 	}
+
+	ticker := time.NewTicker(1 * time.Second)
+	counter := 0
+	go func() {
+		for range ticker.C {
+			counter++
+			fmt.Printf("\rSending...: %d", counter)
+		}
+	}()
+
 	err = service.SendSMTPMessage(msg)
 	if err != nil {
 		log.Printf("Error sending SMTP message: %v", err)
 		return
 	}
 
-	//todo sending
+	ticker.Stop()
 
-	fmt.Println("message sent")
+	fmt.Println("\n message sent")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.WebPort.Port),

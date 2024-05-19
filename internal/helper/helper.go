@@ -5,20 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"mail_microservice/internal/models"
 	"net/http"
 	"net/mail"
+	"os"
 	"path/filepath"
 	"strings"
 )
 
-const maxBytes = int64(1048576) // 1GB
-const maxFileSize = 26214400    // 25MB
+const maxBytes = 10 << 20    // 10 MB
+const maxFileSize = 26214400 // 25MB
 
 func GetFilesFromDirectory(dirPath string) []models.File {
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		log.Fatalf("Failed to read directory: %v", err)
 	}
@@ -26,7 +26,19 @@ func GetFilesFromDirectory(dirPath string) []models.File {
 	var fileList []models.File
 	for _, file := range files {
 		if !file.IsDir() {
-			content, err := ioutil.ReadFile(filepath.Join(dirPath, file.Name()))
+			filePath := filepath.Join(dirPath, file.Name())
+
+			fileInfo, err := os.Stat(filePath)
+			if err != nil {
+				log.Fatalf("Failed to get file info: %v", err)
+			}
+
+			if fileInfo.Size() > maxFileSize {
+				log.Printf("Skipping file %s as it exceeds the maximum allowed size of %d bytes", file.Name(), maxFileSize)
+				continue
+			}
+
+			content, err := os.ReadFile(filePath)
 			if err != nil {
 				log.Fatalf("Failed to read file: %v", err)
 			}
@@ -64,7 +76,7 @@ func ReadForm(r *http.Request, data *models.Message) error {
 		if err != nil {
 			return err
 		}
-		//todo probably wrong
+
 		newFile := models.File{
 			Name: header.Filename,
 			Body: content,
